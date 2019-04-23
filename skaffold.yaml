@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/shawnho1018/weather-forecast:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/shawnho1018/weather-forecast:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: weather-forecast
+        chartPath: charts/weather-forecast
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/shawnho1018/weather-forecast'
+          image.tag: '{{.DIGEST_HEX}}'
